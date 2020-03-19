@@ -1,1 +1,117 @@
-<h1>hello</h1>
+
+<html>
+
+<head>
+<title>Vue test</title>
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+</head>
+
+<script>
+var w,h,pw,ph;
+
+function calcWinSize(){
+w=window.innerWidth;
+h=window.innerHeight;
+
+if(w/h>4/3) // up down sticks
+{ ph=h; pw=ph/3*4;  }
+else  // left right sticks
+{ pw=w; ph=pw/4*3;  }
+}  // function calcWinSize
+
+calcWinSize();
+
+var gbobj={
+msg:"hello",
+
+slides:
+ [{title:"A Vue Framework for PPT"},
+  {title:"Introduction",content:"This presentation shows you the main idea of vue ppt"},
+  {title:"Conclusion",content:"Using vue to create a presentation is a good idea"}
+ ],
+
+sstyle:{                       // powerpoint: h 5% 90% 5%, v 4% 16% 2% 68% 10% title:left17%,top34%
+  position:"fixed",
+  left:`${(w-pw)/2}px`,
+  top:`${(h-ph)/2}px`,
+  width:`${pw}px`,
+  height:`${ph}px`,
+  "box-sizing": "border-box",
+  border:"solid",
+  "background-color":"lightBlue",
+},
+
+activeSlide:0,
+
+};  //gbobj
+
+
+//gobj.slides=JSON.parse(`gobj_slides_text`);
+
+window.onload=function(){
+new Vue({
+el:"#rootdiv",
+data:gbobj,
+watch:{
+  activeSlide:function(a,b)
+   {
+    if(isNaN(a) || a<0 || a>=this.slides.length)
+      this.activeSlide=b;
+   }
+}
+});
+
+
+window.onkeyup=function(e){
+e.preventDefault();
+//alert([e.key,e.code,e.location]);
+var rec=e.code.toLowerCase();
+if(rec.includes("left") || rec.includes("up")) gbobj.activeSlide--;
+else if(rec.includes("right") || rec.includes("down")) gbobj.activeSlide++;
+else if(rec.includes("home")) gbobj.activeSlide=0;
+else if(rec.includes("end")) gbobj.activeSlide=gbobj.slides.length-1;
+
+};  // window.onkeyup
+
+
+};  // window.onload
+
+window.onresize=function(){
+
+calcWinSize();
+
+gbobj.sstyle={                       // powerpoint: h 5% 90% 5%, v 4% 16% 2% 68% 10% title:left17%,top34%
+  position:"fixed",
+  left:`${(w-pw)/2}px`,
+  top:`${(h-ph)/2}px`,
+  width:`${pw}px`,
+  height:`${ph}px`,
+  "box-sizing": "border-box",
+  //border:"solid",
+  "background-color":"lightBlue",
+};  // gobj.sstyle
+
+};  // window.onresize
+
+</script>
+<body style="background-color:black;">
+
+<div id="rootdiv">
+
+ <div :style="sstyle" v-for="(slide,sindex) in slides" 
+ v-show="sindex==activeSlide" @click="activeSlide++"
+ onwheel="event.preventDefault();if(event.deltaY>0){gbobj.activeSlide++;}else{gbobj.activeSlide--;}"
+ >
+  <span onclick="event.stopPropagation();gbobj.activeSlide--;" style="font-size:36px;">←</span>
+  <div :style="(sindex==0)?{position:'absolute',left:'17%',top:'34%',width:'66%','font-size':'48px'}:{position:'absolute',left:'5%',top:'4%',width:'90%',height:'16%','font-size':'48px','text-align':'center'}"
+  v-html="slide.title">
+  </div>
+  <div :style="{position:'absolute',left:'5%',top:'22%',width:'90%',height:'68%','font-size':'36px','overflow':'auto'}"
+  v-html="(slide.content_list && ('<ul><li>'+slide.content_list.trim().split('\n').join('</li><li>')+'</li></ul>')) || slide.content" v-show="sindex!=0">
+  </div>
+ </div>
+
+</div>
+</body>
+
+</html>
